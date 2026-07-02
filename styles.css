@@ -44,8 +44,7 @@ textarea {
 
 .intro-panel,
 .generator-panel,
-.output-panel,
-.lyrics-panel {
+.output-panel {
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -154,8 +153,7 @@ h2 {
 }
 
 .generator-panel,
-.output-panel,
-.lyrics-panel {
+.output-panel {
   padding: 22px;
 }
 
@@ -172,7 +170,6 @@ h2 {
 }
 
 .primary-button,
-.secondary-button,
 .icon-button {
   border: 0;
   border-radius: 8px;
@@ -189,7 +186,6 @@ h2 {
   box-shadow: 0 10px 24px rgba(15, 123, 108, 0.24);
 }
 
-.secondary-button,
 .icon-button {
   padding: 10px 14px;
   background: #eef3f8;
@@ -258,29 +254,18 @@ select {
   padding: 0 12px;
 }
 
-textarea,
-pre {
+textarea {
   width: 100%;
+  min-height: 440px;
   margin: 0;
+  resize: vertical;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   background: #101725;
   color: #ecfdf5;
+  padding: 16px;
   line-height: 1.65;
   white-space: pre-wrap;
-}
-
-textarea {
-  min-height: 372px;
-  resize: vertical;
-  padding: 16px;
-}
-
-pre {
-  min-height: 260px;
-  padding: 18px;
-  overflow: auto;
-  font-family: "Noto Sans KR", system-ui, sans-serif;
 }
 
 .copy-status {
@@ -324,8 +309,7 @@ pre {
 
   .intro-panel,
   .generator-panel,
-  .output-panel,
-  .lyrics-panel {
+  .output-panel {
     padding: 16px;
   }
 
@@ -335,7 +319,6 @@ pre {
   }
 
   .primary-button,
-  .secondary-button,
   .icon-button {
     width: 100%;
   }
