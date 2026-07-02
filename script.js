@@ -22,14 +22,8 @@ const keywords = [
   { category: "감정", text: "이름 없는 설렘", hint: "정확히 설명하기 어려운 기대와 떨림을 음악으로 바꿔보세요." }
 ];
 
-const lyricImages = [
-  "복도 끝 창문", "초록 불빛", "구겨진 시간표", "흔들리는 이어폰", "책상 위 낙서",
-  "비친 내 얼굴", "덜 마른 운동화", "조용한 단체 채팅", "하교길 횡단보도", "잠깐의 정적"
-];
-
 const drawButton = document.querySelector("#drawButton");
 const copyButton = document.querySelector("#copyButton");
-const refreshLyrics = document.querySelector("#refreshLyrics");
 const keywordCategory = document.querySelector("#keywordCategory");
 const keywordText = document.querySelector("#keywordText");
 const keywordHint = document.querySelector("#keywordHint");
@@ -37,7 +31,6 @@ const genreSelect = document.querySelector("#genreSelect");
 const moodSelect = document.querySelector("#moodSelect");
 const voiceSelect = document.querySelector("#voiceSelect");
 const promptOutput = document.querySelector("#promptOutput");
-const lyricsOutput = document.querySelector("#lyricsOutput");
 const copyStatus = document.querySelector("#copyStatus");
 
 let currentKeyword = keywords[0];
@@ -46,37 +39,47 @@ function pickRandom(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
 
+function pickDifferentOption(select, currentValue) {
+  const options = Array.from(select.options);
+  const candidates = options.filter((option) => option.value !== currentValue);
+  return pickRandom(candidates.length > 0 ? candidates : options).value;
+}
+
 function drawKeyword() {
   let nextKeyword = pickRandom(keywords);
   if (nextKeyword.text === currentKeyword.text && keywords.length > 1) {
     nextKeyword = keywords[(keywords.indexOf(nextKeyword) + 1) % keywords.length];
   }
+
   currentKeyword = nextKeyword;
+  genreSelect.value = pickDifferentOption(genreSelect, genreSelect.value);
+  moodSelect.value = pickDifferentOption(moodSelect, moodSelect.value);
+  voiceSelect.value = pickDifferentOption(voiceSelect, voiceSelect.value);
   render();
 }
 
 function buildPrompt() {
   return [
-    `주제 키워드: ${currentKeyword.text}`,
-    `장르: ${genreSelect.value}`,
-    `분위기: ${moodSelect.value}`,
-    `화자: ${voiceSelect.value}`,
+    "고등학생 음악 만들기 수업에서 사용할 한국어 가사 초안을 작성해줘.",
+    "학생들은 이 가사를 바탕으로 Suno에서 노래를 만들 예정이야.",
     "",
-    "요청:",
-    "- 고등학생이 부르기에 자연스러운 한국어 가사로 만들어줘.",
-    "- 벌스 1, 프리코러스, 후렴, 벌스 2, 브릿지, 마지막 후렴 구조로 작성해줘.",
-    "- 후렴에는 따라 부르기 쉬운 반복구를 넣어줘.",
-    "- 너무 유치하지 않고, 교실과 일상 이미지가 떠오르게 해줘.",
-    "- 선정적이거나 폭력적인 표현은 피하고 수업 활동에 적합하게 만들어줘."
+    "조건:",
+    `- 주제 키워드: ${currentKeyword.text}`,
+    `- 키워드 범주: ${currentKeyword.category}`,
+    `- 장르: ${genreSelect.value}`,
+    `- 분위기: ${moodSelect.value}`,
+    `- 화자 관점: ${voiceSelect.value}`,
+    `- 주제 힌트: ${currentKeyword.hint}`,
+    "",
+    "작성 방식:",
+    "- 고등학생이 부르기에 자연스러운 말투로 작성해줘.",
+    "- [Verse 1], [Pre-Chorus], [Chorus], [Verse 2], [Bridge], [Final Chorus] 구조로 써줘.",
+    "- 후렴에는 쉽게 따라 부를 수 있는 반복구를 넣어줘.",
+    "- 교실, 하교길, 친구, 시험, 진로처럼 학생의 일상 이미지가 떠오르게 해줘.",
+    "- 너무 유치하거나 설명문처럼 들리지 않게, 노래 가사답게 압축적인 표현을 써줘.",
+    "- 선정적이거나 폭력적인 표현은 피하고 학교 수업에 적합하게 작성해줘.",
+    "- 마지막에 Suno에 넣기 좋은 짧은 스타일 설명도 1문장으로 덧붙여줘."
   ].join("\n");
-}
-
-function buildLyrics() {
-  const imageA = pickRandom(lyricImages);
-  const imageB = pickRandom(lyricImages.filter((item) => item !== imageA));
-  const hook = currentKeyword.text.replace(/\s+/g, " ");
-
-  return `[Verse 1]\n${imageA} 아래 멈춰 선 마음\n오늘의 나는 조금 다른 표정\n말로는 다 못한 ${hook}\n작은 박자 위에 올려봐\n\n[Pre-Chorus]\n느린 숨을 맞추고\n흔들린 하루를 접으면\n아직 끝나지 않은 이야기가\n우리 쪽으로 걸어와\n\n[Chorus]\n${hook}, 지금 이 순간\n작은 목소리도 노래가 돼\n${hook}, 다시 한 번 더\n내일의 나에게 닿을 때까지\n\n[Verse 2]\n${imageB}처럼 반짝인 장면\n서툰 마음도 리듬이 되고\n괜찮아, 늦어도 괜찮아\n우린 우리 속도로 가\n\n[Bridge]\n아무도 정답을 모르는 밤\n그래도 불러보는 이름\n희미한 빛을 따라가면\n처음의 내가 기다려\n\n[Final Chorus]\n${hook}, 지금 이 순간\n작은 목소리도 노래가 돼\n${hook}, 다시 한 번 더\n우리의 계절이 들릴 때까지`;
 }
 
 function render() {
@@ -84,14 +87,13 @@ function render() {
   keywordText.textContent = currentKeyword.text;
   keywordHint.textContent = currentKeyword.hint;
   promptOutput.value = buildPrompt();
-  lyricsOutput.textContent = buildLyrics();
   copyStatus.textContent = "";
 }
 
 async function copyPrompt() {
   try {
     await navigator.clipboard.writeText(promptOutput.value);
-    copyStatus.textContent = "프롬프트를 복사했습니다.";
+    copyStatus.textContent = "Gemini 프롬프트를 복사했습니다.";
   } catch {
     promptOutput.select();
     document.execCommand("copy");
@@ -101,10 +103,6 @@ async function copyPrompt() {
 
 drawButton.addEventListener("click", drawKeyword);
 copyButton.addEventListener("click", copyPrompt);
-refreshLyrics.addEventListener("click", () => {
-  lyricsOutput.textContent = buildLyrics();
-  copyStatus.textContent = "";
-});
 
 [genreSelect, moodSelect, voiceSelect].forEach((control) => {
   control.addEventListener("change", render);
