@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>랜덤 웹앱 챌린지</title>
+  <style>
+    :root {
+      --bg-a: #18143d;
+      --bg-b: #4338ca;
+      --bg-c: #7c3aed;
+      --white: #ffffff;
+      --text: #111827;
+      --sub: #64748b;
+      --line: #e5e7eb;
+      --yellow: #facc15;
+      --pink: #fb7185;
+      --indigo: #4f46e5;
+      --green: #16a34a;
+      --red: #dc2626;
+      --soft: #f8fafc;
+      --shadow: 0 24px 70px rgba(15, 23, 42, 0.32);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Pretendard", "Noto Sans KR", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 18% 8%, rgba(250, 204, 21, 0.26), transparent 25%),
+        radial-gradient(circle at 86% 14%, rgba(251, 113, 133, 0.25), transparent 24%),
+        radial-gradient(circle at 70% 80%, rgba(96, 165, 250, 0.20), transparent 28%),
+        linear-gradient(135deg, var(--bg-a), var(--bg-b), var(--bg-c));
+      padding: 34px 16px;
+    }
+
+    button, input { font: inherit; }
+
+    .wrap {
+      width: min(1040px, 100%);
+      margin: 0 auto;
+    }
+
+    .hero {
+      color: white;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.14);
+      backdrop-filter: blur(10px);
+      font-weight: 800;
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(36px, 6vw, 68px);
+      line-height: 1.03;
+      letter-spacing: -0.055em;
+    }
+
+    .hero p {
+      max-width: 760px;
+      margin: 0 auto;
+      color: rgba(255,255,255,0.84);
+      line-height: 1.7;
+      font-size: clamp(15px, 2vw, 18px);
+      word-break: keep-all;
+    }
+
+    .panel {
+      background: rgba(255,255,255,0.95);
+      border: 1px solid rgba(255,255,255,0.6);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      padding: clamp(18px, 4vw, 36px);
+      overflow: hidden;
+    }
+
+    .student-box {
+      background: linear-gradient(135deg, #eef2ff, #fdf2f8);
+      border: 1px solid rgba(129, 140, 248, 0.3);
+      border-radius: 26px;
+      padding: 20px;
+      margin-bottom: 18px;
+      text-align: center;
+    }
+
+    .student-box h2 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      letter-spacing: -0.03em;
+    }
+
+    .student-box p {
+      margin: 0 auto 16px;
+      max-width: 620px;
+      color: var(--sub);
+      line-height: 1.65;
+      word-break: keep-all;
+    }
+
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: 13px;
+      color: #4338ca;
+      font-weight: 900;
+      text-align: left;
+    }
+
+    input {
+      width: 180px;
+      border: 1px solid #c7d2fe;
+      border-radius: 16px;
+      background: white;
+      padding: 14px 14px;
+      font-size: 16px;
+      font-weight: 800;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: var(--indigo);
+      box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
+    }
+
+    .machine {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin: 16px 0 16px;
+    }
+
+    .slot {
+      min-height: 96px;
+      border-radius: 24px;
+      background: #111827;
+      color: #fff;
+      border: 4px solid #374151;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 14px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 -12px 20px rgba(255,255,255,0.05);
+    }
+
+    .slot::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.17), transparent 42%, rgba(0,0,0,0.2));
+      pointer-events: none;
+    }
+
+    .slot span {
+      position: relative;
+      font-weight: 950;
+      letter-spacing: -0.04em;
+      font-size: clamp(20px, 3vw, 31px);
+      text-shadow: 0 2px 0 rgba(0,0,0,0.38);
+      word-break: keep-all;
+    }
+
+    .slot.spinning span {
+      animation: spinText 0.08s infinite alternate;
+    }
+
+    @keyframes spinText {
+      from { transform: translateY(-5px) scale(1.02); opacity: 0.72; }
+      to { transform: translateY(5px) scale(0.98); opacity: 1; }
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 14px 21px;
+      font-size: 15px;
+      font-weight: 950;
+      cursor: pointer;
+      transition: transform 0.14s ease, box-shadow 0.14s ease, opacity 0.14s ease;
+      word-break: keep-all;
+    }
+
+    button:hover { transform: translateY(-2px); }
+    button:active { transform: translateY(0); }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .primary {
+      background: var(--yellow);
+      color: #111827;
+      box-shadow: 0 12px 26px rgba(250, 204, 21, 0.34);
+    }
+
+    .dark {
+      background: #111827;
+      color: white;
+    }
+
+    .soft-btn {
+      background: #eef2ff;
+      color: #3730a3;
+    }
+
+    .msg {
+      min-height: 24px;
+      text-align: center;
+      font-weight: 900;
+      color: var(--green);
+      margin: 6px 0 10px;
+      word-break: keep-all;
+    }
+
+    .warn { color: var(--red); }
+
+    .result {
+      display: none;
+      animation: appear 0.32s ease both;
+    }
+
+    .result.show { display: block; }
+
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(12px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .mission-head {
+      border-radius: 28px;
+      padding: 24px;
+      background: linear-gradient(135deg, #fef3c7, #ffe4e6);
+      border: 1px solid rgba(251, 191, 36, 0.55);
+      margin-bottom: 16px;
+    }
+
+    .mission-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 13px;
+      font-weight: 950;
+      background: white;
+      color: #92400e;
+    }
+
+    .chip.green {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .mission-title {
+      margin: 0;
+      font-size: clamp(25px, 4vw, 42px);
+      line-height: 1.16;
+      letter-spacing: -0.05em;
+      word-break: keep-all;
+    }
+
+    .keywords {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .keyword {
+      background: rgba(255,255,255,0.78);
+      border: 1px solid rgba(255,255,255,0.9);
+      color: #7c2d12;
+      padding: 7px 11px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 14px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+
+    .card p {
+      margin: 0;
+      color: #374151;
+      line-height: 1.72;
+      word-break: keep-all;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 20px;
+      color: #374151;
+      line-height: 1.82;
+      word-break: keep-all;
+    }
+
+    li::marker {
+      color: var(--indigo);
+      font-weight: bold;
+    }
+
+    .note {
+      margin-top: 16px;
+      padding: 16px 18px;
+      border-radius: 18px;
+      border: 1px dashed #cbd5e1;
+      background: var(--soft);
+      color: var(--sub);
+      font-size: 14px;
+      line-height: 1.65;
+      word-break: keep-all;
+    }
+
+    details {
+      margin-top: 22px;
+      background: rgba(255,255,255,0.72);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 15px 18px;
+    }
+
+    summary {
+      cursor: pointer;
+      color: #3730a3;
+      font-weight: 950;
+    }
+
+    .mission-list {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .mini {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      line-height: 1.45;
+    }
+
+    .mini strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .mini span {
+      color: var(--sub);
+      font-size: 12px;
+    }
+
+    @media (max-width: 760px) {
+      body { padding: 20px 12px; }
+
+      .machine { gap: 8px; }
+
+      .slot {
+        min-height: 78px;
+        border-radius: 19px;
+        border-width: 3px;
+      }
+
+      .content-grid { grid-template-columns: 1fr; }
+
+      .mission-list { grid-template-columns: 1fr; }
+
+      input { width: 100%; }
+
+      .form-row label,
+      .form-row button,
+      .actions button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div class="badge">🎰 출석번호만 입력하는 미션 뽑기</div>
+      <h1>랜덤 웹앱 챌린지</h1>
+      <p>
+        출석번호를 입력하고 버튼을 누르면 키워드가 슬롯머신처럼 돌아간 뒤 미션이 나옵니다.
+        같은 문제를 받은 친구와도 서로 다른 방식으로 해결해보세요.
+      </p>
+    </section>
+
+    <section class="panel">
+      <section class="student-box">
+        <h2>내 미션 뽑기</h2>
+        <p>
+          출석번호만 입력하면 됩니다. 15개 미션이 번호에 따라 고르게 섞여 배정되도록 만들었습니다.
+        </p>
+        <div class="form-row">
+          <label>
+            출석번호
+            <input id="studentNumber" type="number" min="1" max="99" placeholder="예: 17" />
+          </label>
+          <button class="primary" id="drawBtn">내 앱 미션 뽑기</button>
+        </div>
+      </section>
+
+      <div class="machine" aria-label="키워드 슬롯머신">
+        <div class="slot" id="slot1"><span>학교생활</span></div>
+        <div class="slot" id="slot2"><span>추천</span></div>
+        <div class="slot" id="slot3"><span>미니앱</span></div>
+      </div>
+
+      <div class="actions">
+        <button class="soft-btn" id="sameBtn" disabled>같은 번호로 다시 보기</button>
+        <button class="dark" id="copyBtn" disabled>결과 복사하기</button>
+      </div>
+
+      <div class="msg" id="message"></div>
+
+      <section class="result" id="result">
+        <div class="mission-head">
+          <div class="mission-top">
+            <span class="chip" id="missionNumber">MISSION 01</span>
+            <span class="chip green" id="difficulty">난이도: 쉬움</span>
+          </div>
+          <h2 class="mission-title" id="title">미션 제목</h2>
+          <div class="keywords" id="keywords"></div>
+        </div>
+
+        <div class="content-grid">
+          <article class="card">
+            <h3>📌 문제상황</h3>
+            <p id="situation"></p>
+          </article>
+
+          <article class="card">
+            <h3>💡 해결방안 힌트</h3>
+            <p id="hint"></p>
+          </article>
+
+          <article class="card">
+            <h3>✅ 꼭 넣어야 하는 필수 기능</h3>
+            <ul id="required"></ul>
+          </article>
+
+          <article class="card">
+            <h3>✨ 더 해보고 싶다면 추가할 기능</h3>
+            <ul id="optional"></ul>
+          </article>
+        </div>
+
+        <div class="note">
+          이 미션은 정답이 하나가 아닙니다. 같은 문제상황을 뽑아도 앱 이름, 화면 구성,
+          결과 표현, 말투, 디자인에 따라 전혀 다른 웹앱이 될 수 있습니다.
+        </div>
+      </section>
+
+      <details>
+        <summary>전체 미션 15개 미리 보기</summary>
+        <div class="mission-list" id="missionList"></div>
+      </details>
+    </section>
+  </main>
+
+  <script>
+    const missions = [
+      {
+        title: "수행평가 우선순위 정리 앱",
+        keywords: ["학교생활", "수행평가", "우선순위"],
+        difficulty: "보통",
+        situation: "이번 주에 수행평가와 과제가 여러 개 겹쳤습니다. 학생들은 무엇부터 해야 할지 몰라서 계속 미루고 있습니다.",
+        hint: "과목명, 마감일, 난이도처럼 간단한 정보를 바탕으로 먼저 할 일을 추천하는 앱으로 생각해보세요.",
+        required: ["과제 정보를 입력하거나 선택하는 기능", "우선순위 결과를 보여주는 기능", "완료 여부를 체크하는 기능"],
+        optional: ["오늘 할 일만 따로 보여주기", "긴급도 이모지 표시", "공부를 시작하게 하는 짧은 응원 문구"]
+      },
+      {
+        title: "학교 축제 부스 추천 앱",
+        keywords: ["축제", "취향", "추천"],
+        difficulty: "쉬움",
+        situation: "학교 축제에 부스가 너무 많아서 학생들이 어디부터 가야 할지 고르기 어려워합니다.",
+        hint: "먹거리, 게임, 체험, 포토존 같은 취향을 선택하면 어울리는 부스를 추천하는 방식으로 만들어보세요.",
+        required: ["취향을 선택하는 기능", "추천 부스를 보여주는 기능", "추천 이유를 짧게 설명하는 기능"],
+        optional: ["랜덤 추천 버튼", "친구와 함께 가기 좋은 부스 표시", "축제 포스터 같은 디자인"]
+      },
+      {
+        title: "급식 만족도 기록 앱",
+        keywords: ["급식", "만족도", "기록"],
+        difficulty: "보통",
+        situation: "학생들은 급식 메뉴에 대한 의견이 많지만, 오늘 급식이 어땠는지 간단히 정리해볼 공간이 없습니다.",
+        hint: "오늘의 메뉴에 점수와 한줄평을 남기고, 화면에서 바로 결과를 확인하는 미니 기록 앱으로 만들어보세요.",
+        required: ["메뉴 이름을 입력하는 기능", "점수 또는 별점을 선택하는 기능", "내가 남긴 평가를 화면에 보여주는 기능"],
+        optional: ["오늘의 급식 한줄평", "다시 먹고 싶은 정도 표시", "급식 랭킹처럼 보이는 디자인"]
+      },
+      {
+        title: "동아리 추천 테스트 앱",
+        keywords: ["관심사", "성향", "동아리"],
+        difficulty: "쉬움",
+        situation: "신입생들이 동아리를 고르기 어려워합니다. 자신의 관심사와 성격에 맞는 동아리를 찾고 싶어합니다.",
+        hint: "몇 가지 선택형 질문에 답하면 어울리는 동아리를 추천하는 테스트형 앱으로 만들어보세요.",
+        required: ["선택형 질문 3개 이상", "동아리 추천 결과", "추천 이유 표시"],
+        optional: ["성향 유형 이름 만들기", "결과 카드 디자인", "친구에게 공유할 문구"]
+      },
+      {
+        title: "시험기간 공부 계획 추천 앱",
+        keywords: ["시험", "공부계획", "추천"],
+        difficulty: "보통",
+        situation: "시험기간이 다가왔지만 학생들은 어떤 과목을 먼저 공부해야 할지 계획을 세우기 어려워합니다.",
+        hint: "남은 날짜, 어려운 과목, 공부 가능 시간을 바탕으로 오늘의 공부 순서를 추천하는 앱으로 만들어보세요.",
+        required: ["과목을 입력하거나 선택하는 기능", "공부 가능 시간을 입력하는 기능", "추천 공부 순서를 보여주는 기능"],
+        optional: ["쉬는 시간 추천", "오늘의 공부 미션", "과목별 중요도 표시"]
+      },
+      {
+        title: "감정별 회복 루틴 추천 앱",
+        keywords: ["감정", "스트레스", "회복"],
+        difficulty: "쉬움",
+        situation: "학생들이 피곤하거나 스트레스를 받을 때, 지금 자신에게 필요한 회복 방법을 잘 모를 때가 있습니다.",
+        hint: "현재 기분을 선택하면 짧은 휴식 방법, 음악 분위기, 응원 문구를 추천하는 앱으로 만들어보세요.",
+        required: ["현재 감정을 선택하는 기능", "감정에 맞는 회복 루틴 추천", "짧은 응원 메시지 출력"],
+        optional: ["감정 이모지 디자인", "랜덤 위로 문구", "1분 휴식 타이머 느낌의 화면"]
+      },
+      {
+        title: "지각 방지 등교 루틴 앱",
+        keywords: ["등교", "시간관리", "루틴"],
+        difficulty: "보통",
+        situation: "아침마다 준비 시간이 부족해서 지각할 뻔하는 학생들이 있습니다.",
+        hint: "등교 시간과 준비 시간을 입력하면 몇 시에 일어나야 할지 알려주는 앱으로 만들어보세요.",
+        required: ["등교 시간을 입력하는 기능", "준비 시간을 입력하는 기능", "추천 기상 시간을 보여주는 기능"],
+        optional: ["여유 시간 추가", "아침 준비 체크리스트", "지각 위험도 표시"]
+      },
+      {
+        title: "친구 칭찬 카드 생성기",
+        keywords: ["친구", "칭찬", "카드"],
+        difficulty: "쉬움",
+        situation: "친구에게 고마운 마음을 전하고 싶지만, 막상 어떤 말을 해야 할지 떠오르지 않을 때가 있습니다.",
+        hint: "친구 이름과 장점 키워드를 선택하면 따뜻한 칭찬 문장을 만들어주는 앱으로 만들어보세요.",
+        required: ["친구 이름 입력", "장점 키워드 선택", "칭찬 문장 생성"],
+        optional: ["카드 디자인 선택", "랜덤 칭찬 문구", "복사해서 메시지로 보내기"]
+      },
+      {
+        title: "분리수거 도우미 앱",
+        keywords: ["환경", "분리수거", "안내"],
+        difficulty: "쉬움",
+        situation: "학교나 집에서 쓰레기를 버릴 때, 이 물건을 어떻게 분리수거해야 하는지 헷갈리는 경우가 많습니다.",
+        hint: "물건 종류를 선택하면 올바른 분리수거 방법과 주의사항을 알려주는 앱으로 만들어보세요.",
+        required: ["물건 종류를 선택하는 기능", "분리수거 방법 안내", "주의사항 표시"],
+        optional: ["분리수거 퀴즈", "환경 점수 표시", "자주 헷갈리는 물건 모음"]
+      },
+      {
+        title: "우리 반 자리 배치 랜덤 앱",
+        keywords: ["학급", "자리배치", "랜덤"],
+        difficulty: "쉬움",
+        situation: "자리 배치를 할 때마다 공정하게 정하기 어렵고, 친구들끼리 불만이 생기기도 합니다.",
+        hint: "학생 이름을 입력하면 랜덤으로 섞어서 자리를 배치하는 앱으로 만들어보세요.",
+        required: ["이름을 입력하는 기능", "랜덤으로 섞는 기능", "배치 결과를 보여주는 기능"],
+        optional: ["다시 섞기 버튼", "2인 1조 짝 배정", "앞자리 희망자 표시"]
+      },
+      {
+        title: "체육대회 종목 추천 앱",
+        keywords: ["체육대회", "성향", "종목"],
+        difficulty: "쉬움",
+        situation: "체육대회에서 어떤 종목에 나가야 할지 고민하는 학생들이 있습니다.",
+        hint: "체력, 순발력, 협동심, 선호도를 선택하면 어울리는 종목을 추천하는 앱으로 만들어보세요.",
+        required: ["성향을 선택하는 기능", "추천 종목을 보여주는 기능", "추천 이유 표시"],
+        optional: ["팀 응원 문구", "종목별 난이도 표시", "나의 체육대회 캐릭터 유형"]
+      },
+      {
+        title: "독서 기록 및 책 추천 앱",
+        keywords: ["독서", "취향", "추천"],
+        difficulty: "쉬움",
+        situation: "책을 읽어야 하는데 어떤 책을 골라야 할지 모르거나, 읽은 책을 간단히 정리하지 못하는 학생들이 있습니다.",
+        hint: "관심 분야와 읽고 싶은 분위기를 선택하면 책을 추천하고, 읽은 책의 한줄 감상을 남기는 앱으로 만들어보세요.",
+        required: ["관심 분야 선택", "책 추천 결과 출력", "한줄 감상 입력"],
+        optional: ["별점 기록", "다음에 읽을 책 목록", "독서 카드 디자인"]
+      },
+      {
+        title: "준비물 체크리스트 앱",
+        keywords: ["준비물", "체크리스트", "관리"],
+        difficulty: "쉬움",
+        situation: "학생들이 체육복, 교과서, 수행평가 준비물 등을 자주 깜빡합니다.",
+        hint: "요일별 또는 과목별 준비물을 추가하고 체크할 수 있는 앱으로 만들어보세요.",
+        required: ["준비물을 추가하는 기능", "체크리스트 기능", "완료 상태 표시"],
+        optional: ["요일별 분류", "중요 준비물 강조", "내일 챙길 것 모아보기"]
+      },
+      {
+        title: "진로 성향 미니 테스트 앱",
+        keywords: ["진로", "성향", "테스트"],
+        difficulty: "쉬움",
+        situation: "학생들이 자신의 관심 분야나 진로 방향을 막연하게 느끼고 있습니다.",
+        hint: "간단한 질문에 답하면 어울리는 진로 분야를 추천하는 테스트형 앱으로 만들어보세요.",
+        required: ["진로 관련 질문 4개 이상", "선택지에 따른 결과 분류", "추천 진로 분야 표시"],
+        optional: ["결과 유형 이름 만들기", "관련 활동 추천", "나에게 맞는 과목 추천"]
+      },
+      {
+        title: "학급 소소한 투표 앱",
+        keywords: ["학급", "투표", "의견수집"],
+        difficulty: "보통",
+        situation: "학급에서 간식, 자리, 활동, 주제 등을 정할 때 모두의 의견을 빠르게 모으고 싶을 때가 있습니다.",
+        hint: "선택지를 만들고 화면 안에서 투표 버튼을 눌러 결과가 변하는 체험용 투표 앱으로 만들어보세요.",
+        required: ["투표 주제 입력", "선택지 추가", "투표 결과 표시"],
+        optional: ["막대그래프처럼 결과 보여주기", "최다 득표 항목 강조", "익명 투표 느낌의 UI"]
+      }
+    ];
+
+    const slotPools = [
+      ["학교생활", "축제", "급식", "관심사", "시험", "감정", "등교", "친구", "환경", "학급", "체육대회", "독서", "준비물", "진로"],
+      ["수행평가", "취향", "만족도", "성향", "공부계획", "스트레스", "시간관리", "칭찬", "분리수거", "자리배치", "종목", "기록", "체크리스트", "테스트", "투표"],
+      ["우선순위", "추천", "기록", "동아리", "회복", "루틴", "카드", "안내", "랜덤", "의견수집", "관리", "미니앱"]
+    ];
+
+    /*
+      출석번호가 1, 2, 3번 순서대로 미션 1, 2, 3번이 나오지 않도록
+      15개 미션 번호를 미리 섞은 배열입니다.
+      1~15번 학생은 15개 미션을 한 번씩 받고,
+      16~30번 학생도 같은 방식으로 한 번씩 받습니다.
+    */
+    const missionOrder = [5, 1, 10, 3, 12, 7, 0, 14, 8, 2, 13, 6, 11, 4, 9];
+
+    const slotEls = [
+      document.getElementById("slot1"),
+      document.getElementById("slot2"),
+      document.getElementById("slot3")
+    ];
+
+    const drawBtn = document.getElementById("drawBtn");
+    const sameBtn = document.getElementById("sameBtn");
+    const copyBtn = document.getElementById("copyBtn");
+    const message = document.getElementById("message");
+    const result = document.getElementById("result");
+
+    let currentMission = null;
+    let currentStudentNumber = null;
+    let currentMissionIndex = null;
+    let slotTimer = null;
+
+    function randomItem(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function safeNumber(value) {
+      const number = Number(value);
+      return Number.isFinite(number) ? number : 0;
+    }
+
+    function getMissionIndex(studentNumber) {
+      const orderIndex = (studentNumber - 1) % missionOrder.length;
+      return missionOrder[orderIndex];
+    }
+
+    function setSlots(words) {
+      slotEls.forEach((slot, index) => {
+        slot.querySelector("span").textContent = words[index];
+      });
+    }
+
+    function validateStudentNumber() {
+      const studentNumber = Math.floor(safeNumber(document.getElementById("studentNumber").value));
+
+      if (!studentNumber || studentNumber < 1) {
+        message.textContent = "출석번호를 먼저 입력해주세요.";
+        message.classList.add("warn");
+        return null;
+      }
+
+      message.textContent = "";
+      message.classList.remove("warn");
+      return studentNumber;
+    }
+
+    function startDraw() {
+      const studentNumber = validateStudentNumber();
+      if (!studentNumber) return;
+
+      currentStudentNumber = studentNumber;
+
+      result.classList.remove("show");
+      drawBtn.disabled = true;
+      sameBtn.disabled = true;
+      copyBtn.disabled = true;
+
+      slotEls.forEach(slot => slot.classList.add("spinning"));
+
+      slotTimer = setInterval(() => {
+        setSlots([
+          randomItem(slotPools[0]),
+          randomItem(slotPools[1]),
+          randomItem(slotPools[2])
+        ]);
+      }, 75);
+
+      setTimeout(() => {
+        stopDraw(studentNumber);
+      }, 1400);
+    }
+
+    function stopDraw(studentNumber) {
+      clearInterval(slotTimer);
+
+      const missionIndex = getMissionIndex(studentNumber);
+      const mission = missions[missionIndex];
+
+      currentMission = mission;
+      currentMissionIndex = missionIndex;
+
+      setSlots(mission.keywords);
+      slotEls.forEach(slot => slot.classList.remove("spinning"));
+
+      renderMission(mission, missionIndex, studentNumber);
+
+      drawBtn.disabled = false;
+      sameBtn.disabled = false;
+      copyBtn.disabled = false;
+    }
+
+    function renderMission(mission, index, studentNumber) {
+      document.getElementById("missionNumber").textContent = `MISSION ${String(index + 1).padStart(2, "0")} · ${studentNumber}번`;
+      document.getElementById("difficulty").textContent = `난이도: ${mission.difficulty}`;
+      document.getElementById("title").textContent = mission.title;
+      document.getElementById("situation").textContent = mission.situation;
+      document.getElementById("hint").textContent = mission.hint;
+
+      const keywords = document.getElementById("keywords");
+      keywords.innerHTML = "";
+      mission.keywords.forEach(word => {
+        const tag = document.createElement("span");
+        tag.className = "keyword";
+        tag.textContent = `#${word}`;
+        keywords.appendChild(tag);
+      });
+
+      const required = document.getElementById("required");
+      required.innerHTML = "";
+      mission.required.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        required.appendChild(li);
+      });
+
+      const optional = document.getElementById("optional");
+      optional.innerHTML = "";
+      mission.optional.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        optional.appendChild(li);
+      });
+
+      message.textContent = `${studentNumber}번 학생의 미션이 정해졌습니다.`;
+      message.classList.remove("warn");
+      result.classList.add("show");
+      result.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function missionToText() {
+      if (!currentMission) return "";
+
+      return `[랜덤 웹앱 챌린지 미션]
+
+출석번호: ${currentStudentNumber}번
+
+MISSION ${String(currentMissionIndex + 1).padStart(2, "0")}
+오늘의 미션: ${currentMission.title}
+키워드: ${currentMission.keywords.join(" / ")}
+난이도: ${currentMission.difficulty}
+
+문제상황:
+${currentMission.situation}
+
+해결방안 힌트:
+${currentMission.hint}
+
+꼭 넣어야 하는 필수 기능:
+${currentMission.required.map((item, i) => `${i + 1}. ${item}`).join("\n")}
+
+더 해보고 싶다면 추가할 기능:
+${currentMission.optional.map(item => `- ${item}`).join("\n")}
+
+나의 앱 이름:
+[여기에 앱 이름을 적어보세요]
+
+내가 만들고 싶은 화면 분위기:
+[예: 깔끔하게 / 귀엽게 / 게임처럼 / 학교 축제 느낌으로]`;
+    }
+
+    async function copyText(text) {
+      if (!text) return;
+
+      try {
+        await navigator.clipboard.writeText(text);
+        message.textContent = "복사되었습니다!";
+      } catch (error) {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        textarea.remove();
+        message.textContent = "복사되었습니다!";
+      }
+
+      message.classList.remove("warn");
+      setTimeout(() => {
+        if (currentStudentNumber) {
+          message.textContent = `${currentStudentNumber}번 학생의 미션이 정해졌습니다.`;
+        } else {
+          message.textContent = "";
+        }
+      }, 3000);
+    }
+
+    function renderMissionList() {
+      const list = document.getElementById("missionList");
+
+      missions.forEach((mission, index) => {
+        const item = document.createElement("div");
+        item.className = "mini";
+        item.innerHTML = `
+          <strong>${String(index + 1).padStart(2, "0")}. ${mission.title}</strong>
+          <span>${mission.keywords.join(" / ")} · ${mission.difficulty}</span>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    drawBtn.addEventListener("click", startDraw);
+    sameBtn.addEventListener("click", startDraw);
+    copyBtn.addEventListener("click", () => copyText(missionToText()));
+
+    document.getElementById("studentNumber").addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        startDraw();
+      }
+    });
+
+    renderMissionList();
+  </script>
+</body>
+</html>
