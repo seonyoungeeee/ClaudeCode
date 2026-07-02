@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Suno 키워드 음악 활동</title>
+  <title>Gemini 가사 키워드 활동</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -20,9 +20,9 @@
           </div>
         </div>
         <div>
-          <p class="eyebrow">Suno 음악 만들기 활동</p>
-          <h1 id="app-title">키워드에서 노래 주제와 가사 초안까지</h1>
-          <p class="lead">고등학생이 너무 넓은 주제 앞에서 멈추지 않도록, 무작위 키워드와 선택지를 조합해 바로 사용할 수 있는 음악 제작 프롬프트를 만듭니다.</p>
+          <p class="eyebrow">Gemini 가사 초안 활동</p>
+          <h1 id="app-title">랜덤 조건으로 노래 아이디어 만들기</h1>
+          <p class="lead">키워드, 장르, 분위기, 관점을 한 번에 뽑아 Gemini에서 가사 초안을 받을 수 있는 프롬프트를 만듭니다.</p>
         </div>
       </div>
 
@@ -31,7 +31,7 @@
           <div class="panel-header">
             <div>
               <p class="section-label">Step 1</p>
-              <h2 id="keyword-heading">랜덤 키워드</h2>
+              <h2 id="keyword-heading">랜덤 조건</h2>
             </div>
             <button id="drawButton" class="primary-button" type="button">키워드 뽑기</button>
           </div>
@@ -39,10 +39,10 @@
           <div class="keyword-stage" aria-live="polite">
             <p id="keywordCategory" class="keyword-category">수업을 시작해볼까요?</p>
             <p id="keywordText" class="keyword-text">키워드 대기 중</p>
-            <p id="keywordHint" class="keyword-hint">버튼을 누르면 음악 주제에 어울리는 키워드가 나옵니다.</p>
+            <p id="keywordHint" class="keyword-hint">버튼을 누르면 키워드, 장르, 분위기, 관점이 모두 랜덤으로 정해집니다.</p>
           </div>
 
-          <div class="controls" aria-label="노래 생성 조건">
+          <div class="controls" aria-label="랜덤으로 정해지는 노래 조건">
             <label>
               장르
               <select id="genreSelect">
@@ -80,7 +80,7 @@
           <div class="panel-header compact">
             <div>
               <p class="section-label">Step 2</p>
-              <h2 id="prompt-heading">Suno 프롬프트</h2>
+              <h2 id="prompt-heading">Gemini 가사 프롬프트</h2>
             </div>
             <button id="copyButton" class="icon-button" type="button" title="프롬프트 복사" aria-label="프롬프트 복사">복사</button>
           </div>
@@ -88,17 +88,6 @@
           <p id="copyStatus" class="copy-status" role="status"></p>
         </section>
       </div>
-
-      <section class="lyrics-panel" aria-labelledby="lyrics-heading">
-        <div class="panel-header compact">
-          <div>
-            <p class="section-label">Step 3</p>
-            <h2 id="lyrics-heading">가사 초안</h2>
-          </div>
-          <button id="refreshLyrics" class="secondary-button" type="button">초안 다시 만들기</button>
-        </div>
-        <pre id="lyricsOutput"></pre>
-      </section>
     </section>
   </main>
   <script src="script.js"></script>
