@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F12 개발자 도구 미션 - 완벽 버그 수정판 (8단계)</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f5f6fa;
+            color: #2f3640;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        /* 왼쪽: 미션 안내판 */
+        .sidebar {
+            width: 360px;
+            background-color: #2f3640;
+            color: #f5f6fa;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        .sidebar h1 {
+            font-size: 20px;
+            margin-top: 0;
+            margin-bottom: 5px;
+            color: #00a8ff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sidebar .subtitle {
+            font-size: 12px;
+            color: #9c88ff;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+        .mission-box {
+            background-color: #353b48;
+            border-left: 4px solid #00a8ff;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .mission-box h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            color: #fbc531;
+        }
+        .mission-box p {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .guide-text {
+            font-size: 13px;
+            color: #dcdde1;
+            background-color: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 15px;
+            border: 1px dashed #718093;
+            line-height: 1.5;
+        }
+        .status-panel {
+            margin-top: auto;
+            border-top: 1px solid #718093;
+            padding-top: 20px;
+        }
+        .stage-indicator {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .stage-dots {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 5px;
+        }
+        .dot {
+            height: 8px;
+            border-radius: 4px;
+            background-color: #718093;
+            transition: background-color 0.3s;
+        }
+        .dot.active {
+            background-color: #00a8ff;
+            box-shadow: 0 0 8px #00a8ff;
+        }
+        .dot.completed {
+            background-color: #4cd137;
+        }
+
+        /* 오른쪽: 메인 실습 화면 */
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background-color: #ffffff;
+        }
+        .stage-container {
+            display: none;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+        .stage-container.active {
+            display: block;
+        }
+        
+        /* 개별 스테이지 스타일 */
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            padding: 40px 30px;
+            border: 1px solid #e1b12c;
+            overflow: hidden;
+        }
+        .btn-target {
+            background-color: #4cd137;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            margin-top: 20px;
+        }
+        .btn-target:hover {
+            transform: scale(1.05);
+        }
+        .btn-target:disabled {
+            background-color: #95a5a6 !important;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* 퀴즈 정답 입력 창 */
+        .input-group {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .input-group input {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #dcdde1;
+            border-radius: 4px;
+            width: 180px;
+            text-align: center;
+        }
+        .input-group button {
+            padding: 10px 20px;
+            background-color: #9c88ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* 성공 팝업 효과 */
+        .success-overlay {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(47, 54, 64, 0.9);
+            color: white;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .success-overlay h2 {
+            font-size: 36px;
+            color: #4cd137;
+            margin-bottom: 10px;
+        }
+        .success-overlay p {
+            font-size: 18px;
+            margin-bottom: 25px;
+        }
+        .btn-next {
+            background-color: #00a8ff;
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h1>🛠️ F12 해킹 작전</h1>
+        <div class="subtitle">HTML / CSS / JS 간접 체험 웹앱</div>
+        
+        <div class="mission-box">
+            <h3 id="sidebar-mission-title">미션 로딩 중...</h3>
+            <p id="sidebar-mission-desc">가이드를 읽고 미션을 해결하세요.</p>
+            <div class="guide-text" id="sidebar-mission-guide">
+                힌트가 표시되는 공간입니다.
+            </div>
+        </div>
+
+        <div class="status-panel">
+            <div class="stage-indicator" id="stage-text">STAGE 1 / 8</div>
+            <div class="stage-dots" id="stage-dots">
+                <div class="dot active"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        
+        <div class="stage-container active" id="stage-1">
+            <div class="card" style="border-color: #00a8ff;">
+                <h2 style="margin-top:0;">VIP 전용 입장 게이트</h2>
+                <p id="stage1-parent-box" style="font-size: 18px; margin: 30px 0;">
+                    현재 접속자: <span id="user-name" style="font-weight: bold; color: #e84118;">[방문객]</span>님
+                </p>
+                <p style="color: #7f8c8d; font-size: 14px;">※ 본인 이름이 아니면 입장할 수 없습니다.</p>
+            </div>
+        </div>
+
+        <div class="stage-container" id="stage-2">
+            <div class="card" style="border-color: #fbc531;">
+                <h2 style="margin-top:0;">비밀 요원 요새</h2>
+                <div style="background: #ffffff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <p style="margin:0 0 10px 0; font-size:14px; color:#7f8c8d;">암호코드가 이 아래에 숨겨져 있습니다:</p>
+                    <div id="secret-code-box" style="color: white; font-size: 28px; font-weight: bold; background: white; padding: 10px; border: 1px solid #eee;">
+                        WEB-HACKER-77
+                    </div>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="stage2-input" placeholder="암호 입력">
+                    <button onclick="checkStage2()">제출</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="stage-container" id="stage-3">
+            <div class="card" style="border-color: #4cd137;">
+                <h2 style="margin-top:0;">워프 포탈 장치</h2>
+                <p>포탈 가동 버튼이 프로그래밍 에러로 사라졌습니다.<br>스타일을 수정해서 버튼을 다시 불러오세요!</p>
+                <button id="hidden-portal-btn" style="display: none; width: 100%;" class="btn-target">🌀 다음 차원으로 워프하기</button>
+            </div>
+        </div>
+
+        <div class="stage-container" id="stage-4">
+            <div class="card" style="border-color: #00a8ff;">
+                <h2 style="margin-top:0;">초소형 축소 광선</h2>
+                <p>버튼이 축소 레이저를 맞아 너무 작아졌습니다!<br>개발자 도구에서 크기를 키워 당당하게 클릭하세요.</p>
+                <div style="height: 100px; display:flex; align-items:center; justify-content:center;">
+                    <button id="tiny-button" style="width: 1px; height: 1px; padding:0; font-size:1px; background-color:#e84118; color:white; border:none; cursor:pointer; overflow:hidden;">눌러봐</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="stage-container" id="stage-5">
+            <div class="card" style="border-color: #fbc531; position: relative;">
+                <h2 style="margin-top:0;">탈출 버튼 가출 사건</h2>
+                <p>버튼이 아래로 아주 멀리 도망쳐버렸습니다.<br>마진 속성을 수정해서 눈 앞으로 끌어올리세요!</p>
+                <button id="runaway-button" style="margin-top: 2000px; width:100%;" class="btn-target">🏃 탈출 성공! 클릭하기</button>
+            </div>
+        </div>
+
+        <div class="stage-container" id="stage-6">
+            <div class="card" style="border-color: #9c88ff;">
+                <h2 style="margin-top:0;">최종 보스 방어막</h2>
+                <p>보스의 체력을 0으로 만들어 물리치세요!</p>
+                <div style="margin: 20px 0;">
+                    <div style="font-size: 14px; color: #7f8c8d; margin-bottom: 5px;">🔥 BOSS HP</div>
+                    <div style="background: #eee; border-radius: 10px; height: 24px; width: 100%; overflow: hidden; position: relative;">
+                        <div id="hp-bar" style="background: #e84118; width: 100%; height: 100%; transition: width 0.3s;"></div>
+                        <div id="hp-text" style="position: absolute; width: 100%; text-align: center; top: 2px; font-weight: bold; font-size: 14px; color: #000;">99999 / 99999</div>
+                    </div>
+                </div>
+                <p style="font-size: 13px; color: #7f8c8d;">(콘솔 치트키가 필요합니다!)</p>
+            </div>
+        </div>
+
+        <div class="stage-container" id="stage-7">
+            <div class="card" style="border-color: #4cd137;">
+                <h2 style="margin-top:0;">암호화된 비밀 금고</h2>
+                <p>이 금고는 입력창이 고장 났습니다.<br>콘솔창에 비밀 명령 함수를 직접 입력하여 금고를 여세요!</p>
+                <div style="font-size: 50px; margin: 20px 0;">🔒</div>
+                <p style="font-size:13px; color:#7f8c8d;">주문서 이름: <b>openSesame()</b></p>
+            </div>
+        </div>
+
+        <div class="stage-container" id="stage-8">
+            <div class="card" style="border-color: #9c88ff;">
+                <h2 style="margin-top:0;">시스템 잠금 장치</h2>
+                <p>버튼이 비활성화(disabled) 처리되어 클릭이 불가능합니다.<br>HTML 코드에서 잠금 태그를 완전히 삭제해 보세요!</p>
+                <button id="disabled-btn" disabled style="width: 100%;" class="btn-target">🔓 완전히 탈출하기</button>
+            </div>
+        </div>
+
+        <div class="success-overlay" id="success-popup">
+            <h2>MISSION CLEAR! 🎉</h2>
+            <p id="success-popup-msg">완벽하게 해킹에 성공하셨습니다.</p>
+            <button class="btn-next" onclick="nextStage()">다음 단계로 ➡️</button>
+        </div>
+
+    </div>
+
+    <script>
+        let currentStage = 1;
+        const totalStages = 8;
+
+        const stageData = {
+            1: {
+                title: "1단계: HTML 수정하기 (뼈대)",
+                desc: "화면에 [방문객]이라고 표시되어 통과할 수 없습니다. 개발자 도구로 글자를 본인의 이름으로 바꿔보세요!",
+                guide: "💡 가이드:<br>1. 키보드의 <b>F12</b>키를 누릅니다.<br>2. 좌측 상단 화살표(요소 선택기)로 <b>[방문객]</b> 글자를 클릭하세요.<br>3. 소스코드 창에서 <code>[방문객]</code>을 더블클릭해 이름으로 고치고 <b>Enter</b>를 치세요!"
+            },
+            2: {
+                title: "2단계: CSS 색상 바꾸기 (스타일)",
+                desc: "하얀색 글씨로 비밀 암호가 숨겨져 있습니다. 글자 색상을 검정색으로 바꿔서 확인하세요!",
+                guide: "💡 가이드:<br>1. 요소 선택기로 하얀 상자 안을 클릭합니다.<br>2. 우측 <b>Styles</b> 탭에서 <code>color: white;</code> 부분을 찾으세요.<br>3. <code>white</code>를 <code>black</code>으로 변경하거나 체크박스를 해제하세요!"
+            },
+            3: {
+                title: "3단계: CSS 봉인 해제 (스타일)",
+                desc: "버튼이 display: none 속성 때문에 완전히 숨겨져 있습니다. 봉인을 풀어 버튼을 나타나게 하세요!",
+                guide: "💡 가이드:<br>1. 소스코드 창에서 <code>id=\"hidden-portal-btn\"</code> 버튼을 찾으세요.<br>2. Styles 탭에 있는 <code>display: none;</code> 속성의 체크를 해제하거나 지워버리세요!"
+            },
+            4: {
+                title: "4단계: CSS 크기 수정 (스타일)",
+                desc: "버튼이 너무 작아서 누를 수가 없습니다. 크기를 크게 키워서 클릭해 보세요!",
+                guide: "💡 가이드:<br>1. 요소 선택기로 화면 중앙의 아주 작은 빨간 점을 찾아 클릭합니다.<br>2. Styles 탭에서 <code>width: 1px;</code>와 <code>height: 1px;</code>를 찾으세요.<br>3. 값을 각각 <code>150px</code>, <code>50px</code> 정도로 넉넉하게 키워보세요!"
+            },
+            5: {
+                title: "5단계: CSS 여백 수정 (스타일)",
+                desc: "버튼이 아래로 2000픽셀이나 도망쳤습니다. 여백 스타일을 줄여 화면 안으로 가져오세요!",
+                guide: "💡 가이드:<br>1. 소스코드 창에서 <code>id=\"runaway-button\"</code> 요소를 찾습니다.<br>2. Styles 탭의 <code>margin-top: 2000px;</code>를 더블클릭하여 <code>20px</code>로 수정해보세요!"
+            },
+            6: {
+                title: "6단계: JS 변수 조작 (치트키)",
+                desc: "보스의 체력이 너무 많습니다. 콘솔창에 치트키 변수를 직접 입력하여 체력을 0으로 만드세요!",
+                guide: "💡 가이드:<br>1. 개발자 도구 상단 메뉴에서 <b>Console(콘솔)</b> 탭을 클릭합니다.<br>2. 입력창에 <code>bossHP = 0</code> 이라고 입력한 뒤 엔터를 치세요!"
+            },
+            7: {
+                title: "7단계: JS 함수 실행 (치트키)",
+                desc: "금고를 열기 위해 콘솔창에 비밀 열림 함수를 직접 타이핑해서 작동시키세요!",
+                guide: "💡 가이드:<br>1. <b>Console(콘솔)</b> 창을 엽니다.<br>2. 명령어 입력창에 열림 주문인 <code>openSesame()</code> 을 똑같이 적고 엔터를 누르세요!"
+            },
+            8: {
+                title: "8단계: HTML 속성 제거 (마무리)",
+                desc: "버튼이 마법에 걸려 잠겼습니다(disabled). HTML 태그 안에 박혀있는 잠금장치를 통째로 지워보세요!",
+                guide: "💡 가이드:<br>1. 요소 선택기로 회색 잠긴 버튼을 선택합니다.<br>2. 엘리먼트 창의 코드 안에서 <code>disabled</code> 라고 적힌 속성 글자를 찾아서 더블클릭해 지우거나, 마우스 우클릭 후 'Edit as HTML'로 지워버리세요!"
+            }
+        };
+
+        function updateSidebar() {
+            document.getElementById('sidebar-mission-title').innerText = stageData[currentStage].title;
+            document.getElementById('sidebar-mission-desc').innerHTML = stageData[currentStage].desc;
+            document.getElementById('sidebar-mission-guide').innerHTML = stageData[currentStage].guide;
+            document.getElementById('stage-text').innerText = `STAGE ${currentStage} / ${totalStages}`;
+            
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach((dot, index) => {
+                dot.className = 'dot';
+                if (index + 1 < currentStage) dot.classList.add('completed');
+                else if (index + 1 === currentStage) dot.classList.add('active');
+            });
+        }
+        updateSidebar();
+
+        function showSuccess(msg) {
+            document.getElementById('success-popup-msg').innerText = msg;
+            document.getElementById('success-popup').style.display = 'flex';
+        }
+
+        function nextStage() {
+            document.getElementById('success-popup').style.display = 'none';
+            
+            if (currentStage < totalStages) {
+                document.getElementById(`stage-${currentStage}`).classList.remove('active');
+                currentStage++;
+                document.getElementById(`stage-${currentStage}`).classList.add('active');
+                updateSidebar();
+            } else {
+                alert("🎉 축하합니다! 8단계의 모든 해킹 미션을 완벽하게 마스터하셨습니다. 당신은 이제 멋진 웹 주니어 개발자 입문 완료!");
+                location.reload();
+            }
+        }
+
+        // [★버그 완벽 수정] STAGE 1 감지 로직: 부모 박스의 내부가 통째로 바뀌어도 무조건 감지
+        const parentBox = document.getElementById('stage1-parent-box');
+        const observerStage1 = new MutationObserver(() => {
+            const textContent = parentBox.innerText.trim();
+            
+            // 사용자가 글자를 바꾸거나 통째로 날려도 '[방문객]' 문구만 안보이면 무조건 클리어 처리
+            if (textContent !== "" && !textContent.includes("[방문객]")) {
+                observerStage1.disconnect(); // 감지 안전 종료
+                
+                // 깔끔하게 안내 문구 정리 후 팝업 출력
+                const filteredText = textContent.replace('현재 접속자:', '').replace('님', '').trim();
+                showSuccess(`반갑습니다, ${filteredText || '해커'}님! VIP 본인인증 시스템 우회 성공!`);
+            }
+        });
+        
+        // 하위 구조 전체(subtree)의 변경사항과 텍스트 노드 변화까지 다 엮어서 감시 시작
+        observerStage1.observe(parentBox, { characterData: true, childList: true, subtree: true });
+
+        // STAGE 2 검증
+        function checkStage2() {
+            const userInput = document.getElementById('stage2-input').value.trim();
+            if (userInput.toUpperCase() === "WEB-HACKER-77") {
+                showSuccess("비밀 암호가 일치합니다! 요새 출입문이 열렸습니다.");
+            } else {
+                alert("올바른 암호가 아닙니다. 하얀 글씨를 먼저 드러나게 해보세요!");
+            }
+        }
+
+        // STAGE 3 감지 (display)
+        const portalBtn = document.getElementById('hidden-portal-btn');
+        const observerStage3 = new MutationObserver(() => {
+            if (window.getComputedStyle(portalBtn).display !== 'none') {
+                observerStage3.disconnect();
+                portalBtn.onclick = () => showSuccess("포탈이 성공적으로 열렸습니다!");
+            }
+        });
+        observerStage3.observe(portalBtn, { attributes: true, attributeFilter: ['style'] });
+
+        // STAGE 4 감지 (크기 변경 후 클릭)
+        const tinyBtn = document.getElementById('tiny-button');
+        tinyBtn.onclick = () => {
+            const width = parseInt(window.getComputedStyle(tinyBtn).width);
+            const height = parseInt(window.getComputedStyle(tinyBtn).height);
+            if (width > 30 && height > 15) {
+                showSuccess("초소형 버튼을 정상 크기로 돌려 클릭에 성공했습니다!");
+            } else {
+                alert("버튼이 아직 너무 작아서 제대로 누를 수 없습니다!");
+            }
+        };
+
+        // STAGE 5 감지 (마진 줄이기)
+        const runawayBtn = document.getElementById('runaway-button');
+        runawayBtn.onclick = () => {
+            const marginTop = parseInt(window.getComputedStyle(runawayBtn).marginTop);
+            if (marginTop <= 100) {
+                showSuccess("가출했던 탈출 버튼을 무사히 복귀시키고 탈출에 성공했습니다!");
+            } else {
+                alert("버튼이 아직 너무 멀리 있습니다!");
+            }
+        };
+
+        // STAGE 6 감지 (보스 피 조작)
+        window.bossHP = 99999;
+        const maxHP = 99999;
+        const hpCheckInterval = setInterval(() => {
+            if (currentStage === 6) {
+                const currentHP = Math.max(0, window.bossHP);
+                const percentage = (currentHP / maxHP) * 100;
+                document.getElementById('hp-bar').style.width = `${percentage}%`;
+                document.getElementById('hp-text').innerText = `${currentHP} / ${maxHP}`;
+                if (window.bossHP <= 0) {
+                    clearInterval(hpCheckInterval);
+                    showSuccess("보스의 HP가 0이 되었습니다! 방어막 돌파 완료!");
+                }
+            }
+        }, 300);
+
+        // STAGE 7 함수 바인딩 (금고 열기)
+        window.openSesame = function() {
+            if (currentStage === 7) {
+                showSuccess("열려라 참깨! 콘솔 주문으로 비밀 금고가 활짝 열렸습니다.");
+                return "🔓 금고가 열렸습니다!";
+            }
+            return "지금은 이 주문을 쓸 수 없습니다.";
+        };
+
+        // STAGE 8 감지 (disabled 속성 제거)
+        const disabledBtn = document.getElementById('disabled-btn');
+        const observerStage8 = new MutationObserver(() => {
+            if (!disabledBtn.hasAttribute('disabled')) {
+                observerStage8.disconnect();
+                disabledBtn.onclick = () => showSuccess("잠금장치 속성을 해제하고 완벽하게 탈출했습니다!");
+            }
+        });
+        observerStage8.observe(disabledBtn, { attributes: true });
+    </script>
+</body>
+</html>
